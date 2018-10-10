@@ -98,6 +98,7 @@ class Insect(object):
 
     is_ant = False
     damage = 0
+    is_watersafe = False
     # ADD CLASS ATTRIBUTES HERE
 
     def __init__(self, armor, place=None):
@@ -134,6 +135,7 @@ class Bee(Insect):
 
     name = 'Bee'
     damage = 1
+    is_watersafe = True
     # OVERRIDE CLASS ATTRIBUTES HERE
 
 
@@ -369,7 +371,7 @@ class BodyguardAnt(Ant):
     name = 'Bodyguard'
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 9
-    implemented = False
+    implemented = True
     food_cost = 4
     is_container = True
     # Change to True to view in the GUI
@@ -404,12 +406,18 @@ class TankAnt(BodyguardAnt):
     damage = 1
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 10
-    implemented = False   # Change to True to view in the GUI
+    implemented = True
+    is_container = True
+    food_cost = 6
+    # Change to True to view in the GUI
     # END Problem 10
 
     def action(self, colony):
         # BEGIN Problem 10
-        "*** YOUR CODE HERE ***"
+        if self.contained_ant:
+            self.contained_ant.action(colony)
+        for bee in self.place.bees[:]:
+            bee.reduce_armor(self.damage)
         # END Problem 10
 
 class Water(Place):
@@ -419,7 +427,11 @@ class Water(Place):
         """Add an Insect to this place. If the insect is not watersafe, reduce
         its armor to 0."""
         # BEGIN Problem 11
-        "*** YOUR CODE HERE ***"
+        if insect.is_watersafe:
+            Place.add_insect(self,insect)
+        else:
+            Place.add_insect(self,insect)
+            insect.reduce_armor(insect.armor)
         # END Problem 11
 
 # BEGIN Problem 12
