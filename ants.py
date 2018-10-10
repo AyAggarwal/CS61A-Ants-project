@@ -67,11 +67,18 @@ class Place(object):
         if insect.is_ant:
             # Special handling for QueenAnt
             # BEGIN Problem 13
-            "*** YOUR CODE HERE ***"
+            if isinstance(insect, QueenAnt):
+            	if self.ant.is_container and not insect.first:
+            		self.ant.contained_ant = None
+            		insect.place = None
+            	else:
+	            	if not insect.first:
+	            		self.ant = None
+	            		insect.place = None
+	            	
             # END Problem 13
-
             # Special handling for container ants
-            if self.ant is insect:
+            elif self.ant is insect:
                 # Bodyguard was removed. Contained ant should remain in the game
                 if hasattr(self.ant, 'is_container') and self.ant.is_container:
                     self.ant = self.ant.contained_ant
@@ -87,7 +94,8 @@ class Place(object):
         else:
             self.bees.remove(insect)
 
-        insect.place = None
+        if not isinstance(insect, QueenAnt):
+        	insect.place = None
 
     def __str__(self):
         return self.name
@@ -273,7 +281,7 @@ class LongThrower(ThrowerAnt):
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 4
     min_range, max_range = 5, float('inf')
-    implemented = False
+    implemented = True
     food_cost = 2
     # Change to True to view in the GUI
     # END Problem 4
@@ -435,15 +443,23 @@ class Water(Place):
         # END Problem 11
 
 # BEGIN Problem 12
-# The ScubaThrower class
+class ScubaThrower(ThrowerAnt):
+	name = 'Scuba'
+	food_cost = 6
+	is_watersafe = True
+	implemented = True
+
 # END Problem 12
 
 # BEGIN Problem 13
-class QueenAnt(Ant):  # You should change this line
+class QueenAnt(ScubaThrower):  # You should change this line
 # END Problem 13
     """The Queen of the colony. The game is over if a bee enters her place."""
-
+    counter = 0
+    buffedants = []
     name = 'Queen'
+    food_cost = 7
+    first = True
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 13
     implemented = False   # Change to True to view in the GUI
@@ -451,7 +467,12 @@ class QueenAnt(Ant):  # You should change this line
 
     def __init__(self, armor=1):
         # BEGIN Problem 13
-        "*** YOUR CODE HERE ***"
+        self.armor = armor
+        QueenAnt.counter =  QueenAnt.counter + 1
+        if QueenAnt.counter == 1:
+        	self.first = True
+        else:
+        	self.first = False
         # END Problem 13
 
     def action(self, colony):
@@ -461,7 +482,34 @@ class QueenAnt(Ant):  # You should change this line
         Impostor queens do only one thing: reduce their own armor to 0.
         """
         # BEGIN Problem 13
-        "*** YOUR CODE HERE ***"
+
+        
+        if not self.first:
+        	self.reduce_armor(self.armor)
+        else:
+
+	        self.throw_at(self.nearest_bee(colony.hive))
+	        k = self.place.exit
+
+	        while k:
+	        	if isinstance(k.ant,BodyguardAnt) and k.ant.contained_ant and k.ant.contained_ant not in QueenAnt.buffedants:
+	        		k.ant.contained_ant.damage *= 2
+	        		QueenAnt.buffedants.append(k.ant.contained_ant)
+
+	        	if k.ant not in QueenAnt.buffedants and k.ant:
+		        	k.ant.damage *= 2
+		        	QueenAnt.buffedants.append(k.ant)
+		        		
+
+	
+		        k = k.exit
+
+
+
+
+
+
+
         # END Problem 13
 
     def reduce_armor(self, amount):
@@ -469,7 +517,17 @@ class QueenAnt(Ant):  # You should change this line
         remaining, signal the end of the game.
         """
         # BEGIN Problem 13
-        "*** YOUR CODE HERE ***"
+
+        self.armor -= amount
+        if isinstance(self.place.ant, QueenAnt) and self.first:
+        	if self.armor <= 0:
+        		bees_win()
+        elif self.armor <= 0:
+        	if isinstance(self.place.ant, BodyguardAnt):
+        		self.place.remove_insect(self.place.ant.contained_ant)
+        	else:
+        		self.place.remove_insect(self.place.ant)
+
         # END Problem 13
 
 class AntRemover(Ant):
