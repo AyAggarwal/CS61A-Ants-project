@@ -144,10 +144,12 @@ class Bee(Insect):
     name = 'Bee'
     damage = 1
     is_watersafe = True
-    isscared = False
-    direction = 1
-    # OVERRIDE CLASS ATTRIBUTES HERE
 
+    # OVERRIDE CLASS ATTRIBUTES HERE
+    def __init__(self):
+        self.isscared = False
+        self.direction = 1
+        IInsect.__init__(self, armor)
 
 
 
